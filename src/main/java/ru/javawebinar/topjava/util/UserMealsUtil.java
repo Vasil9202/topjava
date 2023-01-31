@@ -3,6 +3,7 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExcess;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
@@ -28,38 +29,35 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        List<UserMealWithExcess> listExcess = new ArrayList<>();
-
-        Map<Integer,Integer> map = new HashMap<>();
-        for(UserMeal meal : meals){
-            int dayOfMonth = meal.getDateTime().toLocalDate().getDayOfYear();
-            if(map.containsKey(dayOfMonth))
-            map.put(dayOfMonth,map.get(dayOfMonth) + meal.getCalories());
-            else
-                map.put(dayOfMonth,meal.getCalories());
+        List<UserMealWithExcess> result = new ArrayList<>();
+        Map<LocalDate, Integer> filteredMap = new HashMap<>();
+        for (UserMeal meal : meals) {
+            LocalDate mealDate = meal.getDateTime().toLocalDate();
+            filteredMap.merge(mealDate, meal.getCalories(), Integer::sum);
         }
-        for(Map.Entry<Integer,Integer> entry : map.entrySet())
-            if(entry.getValue() > caloriesPerDay){
-        for(UserMeal meal : meals){
-            int dayOfMonth = meal.getDateTime().toLocalDate().getDayOfYear();
-            LocalTime mealTime = meal.getDateTime().toLocalTime();
-            if(dayOfMonth == entry.getKey() && TimeUtil.isBetweenHalfOpen(mealTime,startTime,endTime)){
-                listExcess.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(),meal.getCalories(),true));
+        for (Map.Entry<LocalDate, Integer> entry : filteredMap.entrySet()) {
+            for (UserMeal meal : meals) {
+                LocalDate mealDate = meal.getDateTime().toLocalDate();
+                LocalTime mealTime = meal.getDateTime().toLocalTime();
+                if (entry.getValue() > caloriesPerDay && mealDate.equals(entry.getKey()) && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
+                    result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), true));
+                } else if (mealDate.equals(entry.getKey()) && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
+                    result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), false));
+                }
             }
         }
-            }
-
-        return listExcess;
+        return result;
     }
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        Map<Integer, Integer> map = meals.stream()
-                .collect(Collectors.groupingBy(meal -> meal.getDateTime().toLocalDate().getDayOfYear(),
-                        Collectors.summingInt(UserMeal::getCalories)));
         return meals.stream()
-                .filter(meal -> map.get(meal.getDateTime().toLocalDate().getDayOfYear()) > caloriesPerDay)
-                .filter(meal -> TimeUtil.isBetweenHalfOpen(meal.getDateTime().toLocalTime(), startTime, endTime))
-                .map(meal -> new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), true))
+                .collect(Collectors.groupingBy(meal -> meal.getDateTime().toLocalDate()))
+                .entrySet().stream()
+                .flatMap(entry -> meals.stream()
+                        .filter(meal -> meal.getDateTime().toLocalDate().equals(entry.getKey())
+                                && TimeUtil.isBetweenHalfOpen(meal.getDateTime().toLocalTime(), startTime, endTime))
+                        .map(meal -> new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(),
+                                entry.getValue().stream().mapToInt(UserMeal::getCalories).sum() > caloriesPerDay)))
                 .collect(Collectors.toList());
     }
 }
