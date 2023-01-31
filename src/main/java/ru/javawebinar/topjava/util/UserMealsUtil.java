@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.util;
 
+import javafx.util.converter.LocalDateStringConverter;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExcess;
 
@@ -35,17 +36,16 @@ public class UserMealsUtil {
             LocalDate mealDate = meal.getDateTime().toLocalDate();
             filteredMap.merge(mealDate, meal.getCalories(), Integer::sum);
         }
-        for (Map.Entry<LocalDate, Integer> entry : filteredMap.entrySet()) {
-            for (UserMeal meal : meals) {
-                LocalDate mealDate = meal.getDateTime().toLocalDate();
-                LocalTime mealTime = meal.getDateTime().toLocalTime();
-                if (entry.getValue() > caloriesPerDay && mealDate.equals(entry.getKey()) && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
-                    result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), true));
-                } else if (mealDate.equals(entry.getKey()) && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
-                    result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), false));
-                }
+        for (UserMeal meal : meals) {
+            LocalDate mealDate = meal.getDateTime().toLocalDate();
+            LocalTime mealTime = meal.getDateTime().toLocalTime();
+            if (filteredMap.containsKey(mealDate) && filteredMap.get(mealDate) > caloriesPerDay && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
+                result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), true));
+            } else if (filteredMap.containsKey(mealDate) && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
+                result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), false));
             }
         }
+
         return result;
     }
 
