@@ -33,19 +33,17 @@ public class UserMealsUtil {
         List<UserMealWithExcess> result = new ArrayList<>();
         Map<LocalDate, Integer> filteredMap = new HashMap<>();
         for (UserMeal meal : meals) {
-            LocalDate mealDate = meal.getDateTime().toLocalDate();
-            filteredMap.merge(mealDate, meal.getCalories(), Integer::sum);
+            filteredMap.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
         }
         for (UserMeal meal : meals) {
             LocalDate mealDate = meal.getDateTime().toLocalDate();
             LocalTime mealTime = meal.getDateTime().toLocalTime();
-            if (filteredMap.containsKey(mealDate) && filteredMap.get(mealDate) > caloriesPerDay && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
+            if (filteredMap.get(mealDate) > caloriesPerDay && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
                 result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), true));
-            } else if (filteredMap.containsKey(mealDate) && TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
+            } else if (TimeUtil.isBetweenHalfOpen(mealTime, startTime, endTime)) {
                 result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), false));
             }
         }
-
         return result;
     }
 
