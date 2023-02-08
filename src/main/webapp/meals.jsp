@@ -1,14 +1,6 @@
-<%@ page import="ru.javawebinar.topjava.model.Meal" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List" %>
-<%@ page import="ru.javawebinar.topjava.model.MealTo" %>
-<%@ page import="static ru.javawebinar.topjava.util.MealsUtil.filteredByStreams" %>
-<%@ page import="java.time.LocalTime" %>
 <%@ taglib uri="http://sargue.net/jsptags/time" prefix="javatime" %>
-<%
-    List<Meal> meals = (List<Meal>) request.getAttribute("meals");
-    List<MealTo> mealsTo = filteredByStreams(meals, LocalTime.of(0, 0), LocalTime.of(23, 59), 2000);
-%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 
 <html lang="ru">
@@ -19,7 +11,6 @@
     table {
         border-collapse: collapse;
     }
-
     th, td {
         border: 1px solid black;
         padding: 8px;
@@ -29,6 +20,7 @@
 <h3><a href="index.html">Home</a></h3>
 <hr>
 <h2>Meals</h2>
+<h3><a href="mealEdit.jsp">AddMeal</a></h3>
 <table>
     <tr>
         <th>Дата и время</th>
@@ -36,17 +28,17 @@
         <th>Калорийность</th>
         <th colspan=2>Action</th>
     </tr>
-    <% for (MealTo meal : mealsTo) { %>
-    <tr style="color:<%= meal.isExcess()? "red" : "green" %>;">
-    <td>
-            <javatime:format value="<%= meal.getDateTime() %>" pattern="yyyy-MM-dd HH:mm"/>
-        </td>
-        <td><%= meal.getDescription() %></td>
-        <td><%= meal.getCalories() %></td>
-        <td><a href="mealEdit.jsp?id=<%=meal.getId()%>">Update</a></td>
-        <td><a href="UserController?action=delete&userId=<%=meal.getId()%>">Delete</a></td>
-    </tr>
-    <% } %>
+    <c:forEach items="${meals}" var="meal" varStatus="mealStatus">
+        <tr style="color:${ meal.isExcess()? "red" : "green" };">
+            <td>
+                <javatime:format value="${ meal.getDateTime() }" pattern="yyyy-MM-dd HH:mm"/>
+            </td>
+            <td> ${ meal.getDescription()}</td>
+            <td> ${ meal.getCalories() }</td>
+            <td><a href="<c:url value='/meals'><c:param name='id' value='${mealStatus.index}'/></c:url>">Update</a></td>
+            <td><a href="<c:url value='/meals'><c:param name='idDelete' value='${mealStatus.index}'/></c:url>">Delete</a></td>
+        </tr>
+    </c:forEach>
 </table>
 </body>
 </html>

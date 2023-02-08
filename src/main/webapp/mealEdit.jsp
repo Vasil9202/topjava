@@ -1,45 +1,35 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.6.3/jquery-ui-timepicker-addon.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.6.3/jquery-ui-timepicker-addon.min.js"></script>
-  <style>
-    .ui-datepicker {
-      background-color: #FFFF;
-    }
-  </style>
-  <title>Update</title>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-ui-timepicker-addon@1.6.3/dist/jquery-ui-timepicker-addon.min.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <title>Update Meal</title>
 </head>
 <body>
-<script>
-  $(function() {
-    $('input[name=dateTime]').datetimepicker({
-      dateFormat: "MM/dd/yy",
-      timeFormat: "HH:mm",
-      showTimepicker: true
-    });
-  });
-</script>
-
 <h3><a href="index.html">Home</a></h3>
 <hr>
 <h2>Edit Meal</h2>
-<%
-  int selectedId = Integer.parseInt(request.getParameter("id"));
-%>
 <form action="meals" method="POST">
-  <input type="hidden" name="id" value="<%=selectedId%>">
+  <input type="hidden" name="meal" value="${meal}" />
+  <input type="hidden" name="id" value="${id}" />
   <table>
     <tr>
       <td style="padding-right: 20px;">DateTime:</td>
-      <td><input type="text" name="dateTime" <fmt:formatDate pattern="MM/dd/yyyy HH:mm" value="${meal.date}"  /></td>
+      <td>
+        <p><input type="datetime-local" pattern="MM-DD-YYYY HH:mm" name="dateTime" value="<c:out value="${meal.dateTime}" />" />
+      </td>
     </tr>
     <tr>
       <td style="padding-right: 20px;">Description:</td>
-      <td><input type="text" name="description" <c:out value="${meal.description}" /></td>
+      <td><input type="text" name="description" value="<c:out value="${meal.description}" />" /></td>
     </tr>
     <tr>
       <td style="padding-right: 20px;">Calories:</td>
