@@ -6,19 +6,22 @@ import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InMemoryMealRepository implements MealRepository {
-    private final Map<Integer, Meal> repository = new ConcurrentHashMap<>();
-    private final AtomicInteger counter = new AtomicInteger(0);
+    private static final Map<Integer, Meal> repository = new ConcurrentHashMap<>();
+    private static final AtomicInteger counter = new AtomicInteger(0);
 
     {
         MealsUtil.meals.forEach(this::save);
     }
 
     @Override
-    public Meal save(Meal meal) {
+    public synchronized Meal save(Meal meal) {
+        if(!Objects.equals(meal.getUserId(), meal.getId()))
+            return null;
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             repository.put(meal.getId(), meal);
@@ -29,13 +32,13 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public boolean delete(int id) {
-        return repository.remove(id) != null;
+    public  boolean delete(int id) {
+        return id == repository.get(id).getUserId() && repository.remove(id) != null;
     }
 
     @Override
     public Meal get(int id) {
-        return repository.get(id);
+        return id == repository.get(id).getUserId() ? repository.get(id) : null;
     }
 
     @Override
