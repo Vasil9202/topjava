@@ -1,15 +1,24 @@
 package ru.javawebinar.topjava.model;
 
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+
+@Table(name = "meals")
 public class Meal extends AbstractBaseEntity {
-    private final LocalDateTime dateTime;
+    @Column(name = "date_time")
+    private  LocalDateTime dateTime;
+    @Column(name = "description")
+    private  String description;
+    @Column(name = "calories")
+    private  int calories;
 
-    private final String description;
-
-    private final int calories;
+    public Meal(Meal u){
+        this(u.id,u.dateTime,u.description,u.calories);
+    }
+    public Meal(){}
 
     public Meal(LocalDateTime dateTime, String description, int calories) {
         this(null, dateTime, description, calories);
@@ -24,6 +33,18 @@ public class Meal extends AbstractBaseEntity {
 
     public LocalDateTime getDateTime() {
         return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCalories(int calories) {
+        this.calories = calories;
     }
 
     public String getDescription() {
